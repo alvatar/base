@@ -7,7 +7,6 @@
           case+
           ->
           ->>
-          unless
           aif
           begin0
           push!
@@ -176,18 +175,6 @@
              (->> (apply f args) rest ...)))
           ((procedure? snd)
            (->> (snd value) rest ...))))))
-
-    ;;! unless
-    ;; The opposite of when
-    ;; Equivalent low-level macro:
-    ;; (##define-macro (unless . args)
-    ;;   (let ((condition (car args))
-    ;;         (forms (cdr args)))
-    ;;     `(or ,condition (begin ,@forms))))
-    (define-syntax unless
-      (syntax-rules ()
-        ((_ ?test ?form . ?forms)
-         (if ?test #f (begin ?form . ?forms)))))
 
     ;;! Anaphoric if
     (define-syntax aif
