@@ -1,7 +1,5 @@
 (define-library (github.com/alvatar/base)
 
-  (import gambit)
-
   (export and-let*
           cond+
           case+
@@ -15,37 +13,6 @@
           ps
           let/cc
           dotimes
-
-          symbol->keyword
-          keyword->symbol
-          ->string
-          ->symbol
-          ->keyword
-          string-append-anything
-          symbol-append
-
-          uncons
-          uncons-2
-          uncons-3
-          uncons-4
-          uncons-cons
-          unlist
-          unvector
-          list->values
-          vector->values
-          values->list
-          values->vector
-          values->length
-          values-ref
-          pred2?+
-          eq?+
-          eqv?+
-          equal?+
-
-          type-of
-          coerce
-          ->integer
-          procedure-arity
           )
 
   (begin
@@ -87,6 +54,7 @@
          (if test
              consequent
              (cond clause ...)))))
+
     (define-syntax cond+
       (syntax-rules (=> else)
         ((_ (else else1 else2 ...))
@@ -278,131 +246,4 @@
          (do ((limit n)
               (var 0 (+ var 1)))
              ((>= var limit))
-           . body))))
-
-    ;;------------------------------------------------------------------------------
-    ;;!! Basic types conversion
-
-    ;;! symbol->keyword
-    (define-syntax symbol->keyword
-      (syntax-rules ()
-        ((_ s)
-         (string->keyword (symbol->string s)))))
-
-    ;;! keyword->symbol
-    (define-syntax keyword->symbol
-      (syntax-rules ()
-        ((_ k)
-         (string->symbol (keyword->string k)))))
-
-    ;;! Anything to string
-    (define-syntax ->string
-      (syntax-rules ()
-        ((_ o)
-         (cond ((string? o) o)
-               ((symbol? o) (symbol->string o))
-               ((keyword? o) (keyword->string o))
-               (else (object->string o))))))
-
-    ;;! Anything to symbol
-    (define-syntax ->symbol
-      (syntax-rules ()
-        ((_ o)
-         (string->symbol (->string o)))))
-
-    ;;! Anything to keyword
-    (define-syntax ->keyword
-      (syntax-rules ()
-        ((_ o)
-         (string->keyword (->string o)))))
-
-    ;;! Build a string from list of elements (anything)
-    (define-syntax string-append-anything
-      (syntax-rules ()
-        ((_ . ol)
-         (apply string-append (map (lambda (e) (->string e)) (list . ol))))))
-
-    ;;! Append anything into a symbol
-    (define-syntax symbol-append
-      (syntax-rules ()
-        ((_ . ol)
-         (string->symbol (string-append-anything . ol)))))
-
-    ;;-----------------------------------------------------------------------------
-    ;;!! Multiple values
-
-    ;; List to values (as syntax)
-    (define-syntax list->values
-      (syntax-rules ()
-        ((_ x)
-         (apply values x))))
-
-    ;; Vector to values (as syntax)
-    (define-syntax vector->values
-      (syntax-rules ()
-        ((_ x)
-         (apply values (vector->list x)))))
-
-    ;;! Values to list
-    (define-syntax values->list
-      (syntax-rules ()
-        ((_ x)
-         (call-with-values (lambda () x) list))))
-
-    ;;! Values to vector
-    (define-syntax values->vector
-      (syntax-rules ()
-        ((_ x)
-         (call-with-values (lambda () x) vector))))
-
-    ;;! Number of values produced
-    (define-syntax values-length
-      (syntax-rules ()
-        ((_ producer)
-         (call-with-values
-             (lambda () producer)
-           (lambda v (length v))))))
-
-    ;;! Extract only the nth-value from a function returning multiple values
-    (define-syntax values-ref
-      (syntax-rules ()
-        ((_ n producer)
-         (call-with-values
-             (lambda () producer)
-           (lambda v (list-ref v n))))))
-
-    ;;! All values pairs must satisfy the given 2-predicate
-    (define-syntax pred2?+
-      (syntax-rules ()
-        ((_ ?pred ?a ?b)
-         (let ((la (values->list ?a))
-               (lb (values->list ?b)))
-           (let recur ((la la)
-                       (lb lb))
-             (cond
-              ((null? la) (if (null? lb) #t #f))
-              ((null? lb) (if (null? la) #t #f))
-              (else
-               (and (?pred (car la) (car lb))
-                    (recur (cdr la)
-                           (cdr lb))))))))))
-
-    ;;! All values pairs must satisfy eq?
-    (define-syntax eq?+
-      (syntax-rules ()
-        ((_ ?a ?b)
-         (pred2?+ eq? ?a ?b))))
-
-    ;;! All values pairs must satisfy eqv?
-    (define-syntax eqv?+
-      (syntax-rules ()
-        ((_ ?a ?b)
-         (pred2?+ eqv? ?a ?b))))
-
-    ;;! All values pairs must satisfy equal?
-    (define-syntax equal?+
-      (syntax-rules ()
-        ((_ ?a ?b)
-         (pred2?+ equal? ?a ?b))))
-
-    ))
+           . body))))))

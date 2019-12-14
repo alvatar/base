@@ -1,37 +1,4 @@
-;;-------------------------------------------------------------------------------
-;; Multiple values
-
-;;! uncons (SRFI-71)
-(define (uncons pair)
-  (values (car pair) (cdr pair)))
-
-;;! uncons-2 (SRFI-71)
-(define (uncons-2 list)
-  (values (car list) (cadr list) (cddr list)))
-
-;;! uncons-3 (SRFI-71)
-(define (uncons-3 list)
-  (values (car list) (cadr list) (caddr list) (cdddr list)))
-
-;;! uncons-4 (SRFI-71)
-(define (uncons-4 list)
-  (values (car list) (cadr list) (caddr list) (cadddr list) (cddddr list)))
-
-;;! uncons-cons (SRFI-71)
-(define (uncons-cons alist)
-  (values (caar alist) (cdar alist) (cdr alist)))
-
-;;! unlist (SRFI-71)
-(define (unlist list)
-  (apply values list))
-
-;;! unvector (SRFI-71)
-(define (unvector vector)
-  (apply values (vector->list vector)))
-
-
-;;-------------------------------------------------------------------------------
-;; Type manipulation
+(declare (not safe))
 
 ;;!! Return the type of the parameter
 ;; .parameter Any Scheme object
@@ -45,6 +12,8 @@
    ((keyword? object) 'keyword)
    ((boolean? object) 'boolean)
    ((char? object) 'char)
+   ((fixnum? object) 'fixnum)
+   ((flonum? object) 'float)
    ((integer? object) 'integer)
    ((rational? object) 'rational)
    ((real? object) 'real)
@@ -132,7 +101,6 @@
 (define ->integer
   (let ((fixnum-max-as-flonum (##fixnum->flonum ##max-fixnum)))
     (lambda (n)
-      (declare (not safe))
       (cond
        ((##fixnum? n) n)
        ((##bignum? n) n)           ; Bignums are integer by definition
@@ -142,22 +110,3 @@
        ((##ratnum? n) (##inexact->exact (##floor n)))
        ((##complex? n) (error "complex->integer number conversion not supported"))
        (else (error "Generic ->integer conversion only implemented for numbers"))))))
-
-;;! Get the arity of a procedure
-(define (procedure-arity proc)
-  (if (##closure? proc)
-      (let* ((cc (##closure-code proc))
-             (p (##subprocedure-parent cc)))
-        (cond ((eq? p ##cprc-prc-req0)
-               0)
-              ((eq? p ##cprc-prc-req1)
-               1)
-              ((eq? p ##cprc-prc-req2)
-               2)
-              ((eq? p ##cprc-prc-req3)
-               3)
-              ((eq? p ##cprc-prc-req)
-               (- (##vector-ref (##closure-ref proc 1) 6) 1))
-              (else
-               (##subprocedure-nb-parameters cc))))
-      (##subprocedure-nb-parameters proc)))
