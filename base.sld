@@ -6,6 +6,8 @@
           ->
           ->>
           aif
+          if-let
+          when-let
           begin0
           push!
           string-null?
@@ -162,6 +164,21 @@
            (if (pred var)
                iftrue
                iffalse)))))
+
+    ;;! if-let
+    (define-syntax if-let
+      (syntax-rules ()
+        ((if-let (var value) consequent ...)
+         (let ((var value))
+           (if var consequent ...)))))
+
+    ;;! when-let
+    (define-syntax when-let
+      (syntax-rules ()
+        ((when-let (var value) body ...)
+         (let ((var value))
+           (if var
+               (begin body ...))))))
     ;;! begin0
     ;; Execute a sequence of forms and return the result of the _first_ one.
     ;; Typically used to evaluate one or more forms with side effects and
