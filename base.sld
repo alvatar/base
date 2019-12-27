@@ -15,6 +15,7 @@
           ps
           let/cc
           dotimes
+          update!
           )
 
   (begin
@@ -123,28 +124,24 @@
     ;;! Threading ->
     (define-syntax ->
       (syntax-rules ()
-        ((_ ?value) ?value)
-        ((_ ?value ?snd ?rest ...)
-         (cond
-          ((list? '?snd)
-           (let ((f (primitive-eval (car '?snd)))
-                 (args (cons ?value (cdr '?snd))))
-             (-> (apply f args) ?rest ...)))
-          ((procedure? ?snd)
-           (-> (?snd ?value) ?rest ...))))))
+        [(_ x (y z ...) rest ...)
+         (-> (y x z ...) rest ...)]
+        [(_ x (f) y ...)
+         (-> (f x) y ...)]
+        [(_ x f y ...)
+         (-> (f x) y ...)]
+        [(_ x) x]))
 
     ;;! Threading ->>
     (define-syntax ->>
       (syntax-rules ()
-        ((_ value) value)
-        ((_ value snd rest ...)
-         (cond
-          ((list? 'snd)
-           (let ((f (primitive-eval (car 'snd)))
-                 (args (append (cdr 'snd) (list value))))
-             (->> (apply f args) rest ...)))
-          ((procedure? snd)
-           (->> (snd value) rest ...))))))
+        [(_ x (y ...) rest ...)
+         (->> (y ... x) rest ...)]
+        [(_ x (f) y ...)
+         (->> (f x) y ...)]
+        [(_ x f y ...)
+         (->> (f x) y ...)]
+        [(_ x) x]))
 
     ;;! Anaphoric if
     (define-syntax aif
@@ -179,6 +176,7 @@
          (let ((var value))
            (if var
                (begin body ...))))))
+
     ;;! begin0
     ;; Execute a sequence of forms and return the result of the _first_ one.
     ;; Typically used to evaluate one or more forms with side effects and
@@ -263,4 +261,11 @@
          (do ((limit n)
               (var 0 (+ var 1)))
              ((>= var limit))
-           . body))))))
+           . body))))
+
+    ;;! Update a variable with a function
+    (define-syntax update!
+      (syntax-rules ()
+        ((update! x f)
+         (set! x (f x)))))
+    ))
