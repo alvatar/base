@@ -1,6 +1,6 @@
 (define-library (github.com/alvatar/base memoization)
 
-  (import gambit)
+  (import (scheme base))
 
   (export define-memoized
           define-memoized/key-gen

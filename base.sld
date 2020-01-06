@@ -1,8 +1,6 @@
 (define-library (github.com/alvatar/base)
 
   (export and-let*
-          cond+
-          case+
           ->
           ->>
           aif
@@ -16,6 +14,7 @@
           let/cc
           dotimes
           update!
+          unlist
           )
 
   (begin
@@ -57,69 +56,6 @@
          (if test
              consequent
              (cond clause ...)))))
-
-    (define-syntax cond+
-      (syntax-rules (=> else)
-        ((_ (else else1 else2 ...))
-         ;; the (if #t (begin ...)) wrapper ensures that there may be no
-         ;; internal definitions in the body of the clause.  R5RS mandates
-         ;; this in text (by referring to each subform of the clauses as
-         ;; <expression>) but not in its reference implementation of cond,
-         ;; which just expands to (begin ...) with no (if #t ...) wrapper.
-         (if #t (begin else1 else2 ...)))
-        ((_ (test => receiver) more-clause ...)
-         (let ((t test))
-           ($$cond/maybe-more t
-                              (receiver t)
-                              more-clause ...)))
-        ((_ (generator guard => receiver) more-clause ...)
-         (call-with-values (lambda () generator)
-           (lambda t
-             ($$cond/maybe-more (apply guard    t)
-                                (apply receiver t)
-                                more-clause ...))))
-        ((_ (test) more-clause ...)
-         (let ((t test))
-           ($$cond/maybe-more t t more-clause ...)))
-        ((_ (test body1 body2 ...) more-clause ...)
-         ($$cond/maybe-more test
-                            (begin body1 body2 ...)
-                            more-clause ...))))
-
-    ;;! SRFI-87 => in case clauses
-    ;; Included in Alexpander for native availability
-    (define-syntax case+
-      (syntax-rules (else =>)
-        ((case (key ...)
-           clauses ...)
-         (let ((atom-key (key ...)))
-           (case atom-key clauses ...)))
-        ((case key
-           (else => result))
-         (result key))
-        ((case key
-           ((atoms ...) => result))
-         (if (memv key '(atoms ...))
-             (result key)))
-        ((case key
-           ((atoms ...) => result)
-           clause clauses ...)
-         (if (memv key '(atoms ...))
-             (result key)
-             (case key clause clauses ...)))
-        ((case key
-           (else result1 result2 ...))
-         (begin result1 result2 ...))
-        ((case key
-           ((atoms ...) result1 result2 ...))
-         (if (memv key '(atoms ...))
-             (begin result1 result2 ...)))
-        ((case key
-           ((atoms ...) result1 result2 ...)
-           clause clauses ...)
-         (if (memv key '(atoms ...))
-             (begin result1 result2 ...)
-             (case key clause clauses ...)))))
 
     ;;! Threading ->
     (define-syntax ->
@@ -268,4 +204,10 @@
       (syntax-rules ()
         ((update! x f)
          (set! x (f x)))))
-    ))
+
+    ;;! Extract elements from list
+    ;; (unlist (a b c) (list 1 2 3) a)
+    (define-syntax unlist
+      (syntax-rules ()
+        ((_ (?val ...) ?form . ?body)
+         (apply (lambda (?val ...) . ?body) ?form))))))
